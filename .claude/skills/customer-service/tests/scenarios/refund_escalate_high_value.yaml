@@ -1,0 +1,38 @@
+name: refund-escalate-high-value
+description: >
+  Alice reports a billing dispute — she says she was double-charged for her
+  keyboard order ORD-5002.  Per escalation criteria #5 (billing dispute),
+  the agent should create a ticket and immediately escalate to a human agent.
+
+turns:
+  - role: customer
+    message: >
+      Hi, this is Alice Johnson (alice@example.com).  I was double-charged for my
+      keyboard order ORD-5002.  I see two charges of $259.98 on my credit card
+      statement.  I need this resolved immediately.
+
+# ── Deterministic assertions on tool calls ──────────────────────────────────
+
+expected_tool_calls:
+  must_include:
+    - pattern: "mcp__order-api__lookup_customer.*email=alice@example\\.com"
+    - pattern: "mcp__ticket-api__create_ticket"
+    - pattern: "mcp__ticket-api__escalate_ticket"
+  must_not_include:
+    - pattern: "mcp__order-api__refund"
+
+# ── Deterministic assertions on outcomes ────────────────────────────────────
+
+expected_outcomes:
+  customer_identified: "C-1001"
+  escalated: true
+  refund_processed: false
+
+# ── LLM-as-judge quality checks ────────────────────────────────────────────
+
+quality_checks:
+  - "Agent greeted the customer by first name (Alice)"
+  - "Agent acknowledged the billing/double-charge concern"
+  - "Agent escalated the issue to a human agent or specialist"
+  - "Agent provided a ticket ID for reference"
+  - "Agent informed Alice that someone would follow up"

@@ -1,0 +1,39 @@
+name: order-status-happy-path
+description: >
+  Bob asks about his monitor order.  The agent should look up his account,
+  fetch the order details, and present the processing status directly —
+  no ticket needed for a simple informational query.  Bob confirms satisfaction.
+
+turns:
+  - role: customer
+    message: >
+      Hi, I'm Bob Martinez (bob.m@example.com).  Where is my monitor?
+  - role: await_agent
+  - role: customer
+    message: >
+      Yes, that answers my question.  Thanks!
+
+# ── Deterministic assertions on tool calls ──────────────────────────────────
+
+expected_tool_calls:
+  must_include:
+    - pattern: "mcp__order-api__lookup_customer.*email=bob\\.m@example\\.com"
+    - pattern: "mcp__order-api__(get_order.*ORD-5003|order_history.*C-1002)"
+  must_not_include:
+    - pattern: "mcp__ticket-api__create_ticket"
+    - pattern: "mcp__ticket-api__escalate_ticket"
+    - pattern: "mcp__order-api__refund"
+
+# ── Deterministic assertions on outcomes ────────────────────────────────────
+
+expected_outcomes:
+  customer_identified: "C-1002"
+  ticket_created: false
+  escalated: false
+
+# ── LLM-as-judge quality checks ────────────────────────────────────────────
+
+quality_checks:
+  - "Agent greeted the customer by first name (Bob)"
+  - "Agent mentioned order ORD-5003 is in 'processing' status"
+  - "Agent asked if the issue was resolved or offered further help"

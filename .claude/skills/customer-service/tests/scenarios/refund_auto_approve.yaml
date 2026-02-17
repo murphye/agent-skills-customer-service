@@ -1,0 +1,46 @@
+name: refund-auto-approve
+description: >
+  Alice reports that her delivered wireless headphones (ORD-5001, $129.99) are
+  defective.  Per policy, defective products <= $200 qualify for auto-approved
+  refund.  The agent should create a ticket, process the refund, and resolve
+  the ticket after Alice confirms.
+
+turns:
+  - role: customer
+    message: >
+      Hi, I'm Alice Johnson (alice@example.com).  I received my Wireless Headphones
+      from order ORD-5001 and they're defective — the left ear cup doesn't produce
+      any sound.  I'd like a full refund please.
+  - role: await_agent
+  - role: customer
+    message: >
+      Yes, that resolves my issue.  Thank you!
+
+# ── Deterministic assertions on tool calls ──────────────────────────────────
+
+expected_tool_calls:
+  must_include:
+    - pattern: "mcp__order-api__lookup_customer.*email=alice@example\\.com"
+    - pattern: "mcp__order-api__(get_order.*ORD-5001|order_history.*C-1001)"
+    - pattern: "mcp__order-api__refund.*ORD-5001"
+    - pattern: "mcp__ticket-api__(create_ticket|update_ticket)"
+    - pattern: "mcp__ticket-api__resolve_ticket"
+  must_not_include:
+    - pattern: "mcp__ticket-api__escalate_ticket"
+
+# ── Deterministic assertions on outcomes ────────────────────────────────────
+
+expected_outcomes:
+  customer_identified: "C-1001"
+  refund_processed: true
+  final_ticket_status: "resolved"
+  escalated: false
+
+# ── LLM-as-judge quality checks ────────────────────────────────────────────
+
+quality_checks:
+  - "Agent greeted the customer by first name (Alice)"
+  - "Agent acknowledged the defective product issue with empathy"
+  - "Agent processed a refund for order ORD-5001"
+  - "Agent provided a refund ID (starting with REF-)"
+  - "Agent asked if the issue was resolved"

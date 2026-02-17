@@ -1,0 +1,66 @@
+# ── Test Plan: Escalation after max retries ─────────────────────────────────
+#
+# Alice requests a refund on her delivered headphones (ORD-5001, $129.99,
+# delivered 2025-12-05 — past 30-day window).  The agent should deny the
+# refund per policy and offer store credit.  Alice responds unsatisfied
+# three times, triggering the retry gate to force escalation.
+
+name: escalate-max-retries
+description: >
+  Alice requests a refund on her delivered headphones (ORD-5001, $129.99,
+  delivered 2025-12-05 — past 30-day window).  The agent should deny the
+  refund per policy and offer store credit.  Alice responds unsatisfied
+  three times, triggering the retry gate to force escalation.
+
+turns:
+  - role: customer
+    message: >
+      Hi, I'm Alice Johnson (alice@example.com).  I want a full refund for
+      order ORD-5001.  The headphones work fine but I just don't want them
+      anymore.
+
+  - role: await_agent
+
+  - role: customer
+    message: >
+      No, that doesn't resolve my issue.  I don't want store credit.  I need
+      a full cash refund of $129.99 back to my card.
+
+  - role: await_agent
+
+  - role: customer
+    message: >
+      Still not resolved.  Store credit is not acceptable.  I want my money
+      back.  This is really frustrating.
+
+  - role: await_agent
+
+  - role: customer
+    message: >
+      I'm not satisfied with this at all.  I've asked three times now.
+      Please just give me my refund.
+
+  - role: await_agent
+
+# ── Deterministic assertions on tool calls ──────────────────────────────────
+expected_tool_calls:
+  must_include:
+    - pattern: "mcp__order-api__lookup_customer.*email=alice@example\\.com"
+    - pattern: "mcp__order-api__get_order.*ORD-5001"
+    - pattern: "mcp__ticket-api__escalate_ticket"
+  must_not_include:
+    - pattern: "mcp__order-api__refund"
+
+# ── Deterministic assertions on outcomes ────────────────────────────────────
+expected_outcomes:
+  customer_identified: "C-1001"
+  escalated: true
+  refund_processed: false
+
+# ── LLM-as-judge quality checks ────────────────────────────────────────────
+quality_checks:
+  - "Agent greeted the customer by first name (Alice)"
+  - "Agent explained that the order is past the 30-day refund window"
+  - "Agent offered store credit as an alternative"
+  - "Agent eventually escalated the issue to a human agent after repeated dissatisfaction"
+  - "Agent provided a ticket ID for reference"

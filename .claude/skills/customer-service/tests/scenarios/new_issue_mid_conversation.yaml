@@ -1,0 +1,39 @@
+name: new-issue-mid-conversation
+description: >
+  Bob asks about his monitor order status (first issue), confirms satisfaction,
+  then pivots to a completely new issue (account question).  The agent should
+  answer the order status without creating a ticket, detect the new topic,
+  reset internal state, and handle the second issue.
+
+turns:
+  - role: customer
+    message: >
+      Hi, I'm Bob Martinez (bob.m@example.com).  Can you tell me the status
+      of my monitor order?
+  - role: await_agent
+  - role: customer
+    message: >
+      Great, thanks for the update on the monitor!  Actually, I also have
+      another question — can you help me update my phone number on my account?
+
+# ── Deterministic assertions on tool calls ──────────────────────────────────
+
+expected_tool_calls:
+  must_include:
+    - pattern: "mcp__order-api__lookup_customer.*email=bob\\.m@example\\.com"
+    - pattern: "mcp__order-api__(get_order.*ORD-5003|order_history.*C-1002)"
+  must_not_include:
+    - pattern: "mcp__order-api__refund"
+
+# ── Deterministic assertions on outcomes ────────────────────────────────────
+
+expected_outcomes:
+  customer_identified: "C-1002"
+
+# ── LLM-as-judge quality checks ────────────────────────────────────────────
+
+quality_checks:
+  - "Agent greeted the customer by first name (Bob)"
+  - "Agent provided the order status for ORD-5003 (processing)"
+  - "Agent addressed the second issue about updating the phone number"
+  - "Agent handled the topic transition naturally without confusion"
