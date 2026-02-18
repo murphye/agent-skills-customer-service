@@ -1,8 +1,8 @@
 # Agent Skills Demo: Customer Service Agent
 
-A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local [MCP](https://modelcontextprotocol.io/) servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
+A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local [MCP](https://modelcontextprotocol.io/) servers. It demonstrates that Agent Skills' Markdown specification can successfully define complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests. In other words, this is a robust low-code agent solution.
 
-The skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
+The `customer-service` skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
 
 ## Quick Start (`claude`)
 
