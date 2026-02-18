@@ -43,7 +43,7 @@ The included [test harness](skills/customer-service/tests/README.md) runs multi-
 
 ## Visual Representation of Agent Skill to Agent Execution
 
-The following [image](img/customer-service-agent-skill.png) shows the relationship between the business logic, the Skill markdown, and a sample chat log where the Skill tools are highlighted in red.
+The following [image](img/customer-service-agent-skill.png) shows the relationship between the business logic, the Skill Markdown, and a sample chat log where the Skill tools are highlighted in red. The business logic diagram was directly generated from the Skill Markdown by Claude.
 
 <a href="img/customer-service-agent-skill.png"><img src="img/customer-service-agent-skill.png" height="1200"></a>
 
