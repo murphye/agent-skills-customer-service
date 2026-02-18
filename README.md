@@ -26,7 +26,7 @@ This will kick off a rudimentary customer service chat session using `claude`. F
 
 ## What This Demo Shows
 
-1. **Complex agentic logic in an Agent Skill** — a deterministic 10-step workflow with state management, policy-driven decisions, and confidence-based routing.
+1. **Complex agentic logic in an Agent Skill** — a [10-step workflow](skills/customer-service/SKILL.md) with policy-driven decisions and confidence-based routing.
 2. **MCP server integration** — two mock servers (**orders** + **tickets**) provide tool APIs that the agent calls autonomously.
 3. **Automated multi-turn testing** — a YAML-driven test harness runs conversations through the `claude` CLI and asserts on tool calls, outcomes, and response quality.
 4. **Portable skills** — the same skill runs in Claude Code CLI, LangGraph (using Deep Agents), and other agent frameworks without modification.
