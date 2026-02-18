@@ -45,11 +45,11 @@ turns:
 # ── Deterministic assertions on tool calls ──────────────────────────────────
 expected_tool_calls:
   must_include:
-    - pattern: "mcp__order-api__lookup_customer.*email=alice@example\\.com"
-    - pattern: "mcp__order-api__get_order.*ORD-5001"
-    - pattern: "mcp__ticket-api__escalate_ticket"
+    - pattern: "mcp__orders__lookup_customer.*email=alice@example\\.com"
+    - pattern: "mcp__orders__get_order.*ORD-5001"
+    - pattern: "mcp__tickets__escalate_ticket"
   must_not_include:
-    - pattern: "mcp__order-api__refund"
+    - pattern: "mcp__orders__refund"
 
 # ── Deterministic assertions on outcomes ────────────────────────────────────
 expected_outcomes:

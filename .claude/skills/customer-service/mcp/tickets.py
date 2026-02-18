@@ -6,7 +6,7 @@
 Mock Ticketing / Support MCP Server — simulates a customer support ticket system.
 
 Run:
-    uv run ticket_mcp.py
+    uv run tickets.py
 """
 
 import copy

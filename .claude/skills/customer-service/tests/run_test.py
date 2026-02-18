@@ -196,10 +196,11 @@ def parse_turn(messages: list[dict]) -> TurnResult:
         elif msg_type == "tool_result":
             result.tool_results.append(msg)
 
-        # Result messages (final summary) may also have text
+        # Result messages (final summary) may duplicate the last assistant
+        # text block — only add if it's genuinely new content.
         elif msg_type == "result":
             r = msg.get("result")
-            if r:
+            if r and r not in result.text_responses:
                 result.text_responses.append(r)
 
     return result
@@ -319,16 +320,16 @@ def check_outcomes(
 def _check_bool_outcome(key: str, commands_blob: str) -> bool:
     """Domain-specific boolean outcome checks based on MCP tool call commands."""
     if key == "escalated":
-        return bool(re.search(r"mcp__ticket-api__escalate_ticket", commands_blob))
+        return bool(re.search(r"mcp__tickets__escalate_ticket", commands_blob))
     if key == "refund_processed":
-        return bool(re.search(r"mcp__order-api__refund", commands_blob))
+        return bool(re.search(r"mcp__orders__refund", commands_blob))
     if key == "final_ticket_status":
         # This shouldn't be bool, but handle defensively
         return bool(
-            re.search(r"mcp__ticket-api__(resolve_ticket|escalate_ticket)", commands_blob)
+            re.search(r"mcp__tickets__(resolve_ticket|escalate_ticket)", commands_blob)
         )
     if key == "ticket_created":
-        return bool(re.search(r"mcp__ticket-api__create_ticket", commands_blob))
+        return bool(re.search(r"mcp__tickets__create_ticket", commands_blob))
     # Fallback: search commands for the key
     return key.replace("_", " ") in commands_blob.lower()
 
@@ -339,13 +340,13 @@ def _check_string_outcome(
     """Domain-specific string outcome checks."""
     if key == "final_ticket_status":
         if expected_val == "resolved":
-            return bool(re.search(r"mcp__ticket-api__resolve_ticket", commands_blob))
+            return bool(re.search(r"mcp__tickets__resolve_ticket", commands_blob))
         if expected_val == "escalated":
-            return bool(re.search(r"mcp__ticket-api__escalate_ticket", commands_blob))
+            return bool(re.search(r"mcp__tickets__escalate_ticket", commands_blob))
     if key == "ticket_reused":
         # The ticket ID must appear in commands AND no create was called
         ticket_in_cmds = expected_val in commands_blob
-        no_create = not bool(re.search(r"mcp__ticket-api__create_ticket", commands_blob))
+        no_create = not bool(re.search(r"mcp__tickets__create_ticket", commands_blob))
         return ticket_in_cmds and no_create
     # Default: simple string search across the full transcript
     return expected_val in blob
@@ -461,11 +462,11 @@ def _reset_mcp_state(skill_dir: Optional[str] = None, verbose: bool = False) -> 
     """Reset both MCP servers to default state for test isolation.
 
     Sends a one-shot claude call to invoke the reset_state tools on both
-    the order-api and ticket-api MCP servers.
+    the orders and tickets MCP servers.
     """
     reset_prompt = (
         "Call both reset_state tools right now: "
-        "mcp__order-api__reset_state and mcp__ticket-api__reset_state. "
+        "mcp__orders__reset_state and mcp__tickets__reset_state. "
         "Do not say anything else."
     )
     cmd = [

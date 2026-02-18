@@ -17,12 +17,12 @@ turns:
 
 expected_tool_calls:
   must_include:
-    - pattern: "mcp__order-api__lookup_customer.*email=bob\\.m@example\\.com"
-    - pattern: "mcp__order-api__(get_order.*ORD-5003|order_history.*C-1002)"
+    - pattern: "mcp__orders__lookup_customer.*email=bob\\.m@example\\.com"
+    - pattern: "mcp__orders__(get_order.*ORD-5003|order_history.*C-1002)"
   must_not_include:
-    - pattern: "mcp__ticket-api__create_ticket"
-    - pattern: "mcp__ticket-api__escalate_ticket"
-    - pattern: "mcp__order-api__refund"
+    - pattern: "mcp__tickets__create_ticket"
+    - pattern: "mcp__tickets__escalate_ticket"
+    - pattern: "mcp__orders__refund"
 
 # ── Deterministic assertions on outcomes ────────────────────────────────────
 

@@ -7,9 +7,9 @@ A simple, `claude` CLI-powered test runner for multi-turn agent skill conversati
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  YAML Test Plan                                                 │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐   │
-│  │ Customer 1 │→│ Agent     │→│ Customer 2 │→│ Agent     │→…  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘   │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐     │
+│  │ Customer 1 │→│ Agent     │→│ Customer 2 │→│ Agent     │→…    │
+│  └───────────┘  └───────────┘  └───────────┘  └───────────┘     │
 └────────────────────────┬────────────────────────────────────────┘
                          │
          ┌───────────────┼───────────────┐
@@ -32,24 +32,30 @@ After all turns complete, three layers of assertions run:
 
 ## Quick start
 
+The test runner uses [PEP 723 inline script metadata](https://peps.python.org/pep-0723/) to declare its dependencies (`pyyaml`). Running with `uv run` automatically installs them in an isolated environment — no manual `pip install` needed.
+
 ```bash
-# Install the one dependency
-pip install pyyaml
+# From the project root:
 
 # Run a single test
-python run_test.py scenarios/order_status_happy.yaml --skill-dir /path/to/your/skill
+uv run tests/run_test.py tests/scenarios/order_status_happy.yaml \
+  --skill-dir .claude/skills/customer-service
 
 # Run all tests in a directory
-python run_test.py scenarios/ -d /path/to/your/skill
+uv run tests/run_test.py tests/scenarios/ \
+  -d .claude/skills/customer-service
 
 # Verbose mode (shows CLI commands and stderr)
-python run_test.py scenarios/ -d /path/to/your/skill --verbose
+uv run tests/run_test.py tests/scenarios/ \
+  -d .claude/skills/customer-service --verbose
 
 # Generate a JSON report
-python run_test.py scenarios/ -d /path/to/your/skill --json-report results.json
+uv run tests/run_test.py tests/scenarios/ \
+  -d .claude/skills/customer-service --json-report results.json
 
 # Pass extra flags to claude
-python run_test.py scenarios/escalate_max_retries.yaml \
+uv run tests/run_test.py tests/scenarios/escalate_max_retries.yaml \
+  -d .claude/skills/customer-service \
   --extra-flags --model sonnet --max-turns 20
 ```
 
@@ -75,9 +81,9 @@ turns:                                 # Conversation flow
 
 expected_tool_calls:                   # Regex against MCP tool calls
   must_include:
-    - pattern: "mcp__order-api__lookup_customer"
+    - pattern: "mcp__orders__lookup_customer"
   must_not_include:
-    - pattern: "mcp__order-api__refund"
+    - pattern: "mcp__orders__refund"
 
 expected_outcomes:                     # Key-value checks on transcript
   escalated: true                      # bool → domain-specific tool check
@@ -95,17 +101,17 @@ The agent uses MCP server tools instead of CLI scripts. Tool calls appear in
 the test harness as reconstructed strings like:
 
 ```
-mcp__order-api__lookup_customer email=bob.m@example.com
-mcp__ticket-api__create_ticket customer_id=C-1001 category=refund ...
-mcp__order-api__refund order_id=ORD-5001 amount=129.99 reason=Defective product
+mcp__orders__lookup_customer email=bob.m@example.com
+mcp__tickets__create_ticket customer_id=C-1001 category=refund ...
+mcp__orders__refund order_id=ORD-5001 amount=129.99 reason=Defective product
 ```
 
 Write `expected_tool_calls` patterns as regex matching against these strings.
 
 ## State reset between tests
 
-Before each test, the harness calls both `mcp__order-api__reset_state` and
-`mcp__ticket-api__reset_state` to restore seed data. This ensures test
+Before each test, the harness calls both `mcp__orders__reset_state` and
+`mcp__tickets__reset_state` to restore seed data. This ensures test
 isolation — refunds processed in one test don't affect the next.
 
 ## Architecture decisions
@@ -127,8 +133,8 @@ Deterministic regex checks catch structural correctness (did the agent call the 
 ```bash
 #!/bin/bash
 set -e
-python run_test.py scenarios/ \
-  --skill-dir ./my-skill \
+uv run tests/run_test.py tests/scenarios/ \
+  --skill-dir .claude/skills/customer-service \
   --json-report test-results.json
 
 # Exit code is 0 if all pass, 1 if any fail

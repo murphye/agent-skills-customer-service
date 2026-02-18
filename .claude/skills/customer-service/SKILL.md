@@ -7,13 +7,13 @@ description: >
   user presents a customer support scenario or asks you to role-play as a
   customer service agent.
 license: MIT
-compatibility: Requires MCP servers (order-mcp, ticket-mcp) configured in .mcp.json. Designed for Claude Code.
+compatibility: Requires MCP servers (orders, tickets) configured in .mcp.json. Designed for Claude Code.
 metadata:
   author: agent-skills-demo
   version: "2.0"
   category: demo
   loop-type: agentic
-allowed-tools: mcp__order-api__* mcp__ticket-api__* Read
+allowed-tools: mcp__orders__* mcp__tickets__* Read
 ---
 
 # Customer Service Agent
@@ -28,13 +28,13 @@ This skill uses two MCP servers that provide tools for order management and
 ticket management. The servers are configured in `.mcp.json` at the project root
 and start automatically when Claude Code launches.
 
-**Order API tools** (server: `order-api`):
+**Order API tools** (server: `orders`):
 - `lookup_customer(email?, customer_id?)` — Look up a customer by email or ID
 - `get_order(order_id)` — Get full details for an order
 - `order_history(customer_id)` — List all orders for a customer
 - `refund(order_id, amount, reason)` — Process a refund
 
-**Ticket API tools** (server: `ticket-api`):
+**Ticket API tools** (server: `tickets`):
 - `create_ticket(customer_id, category, subject, description, priority?, order_id?)` — Create a support ticket
 - `get_ticket(ticket_id)` — Get ticket details
 - `update_ticket(ticket_id, status?, add_note?)` — Update ticket status or add a note
