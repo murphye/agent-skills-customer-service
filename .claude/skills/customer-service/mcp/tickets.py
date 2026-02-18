@@ -5,12 +5,18 @@
 """
 Mock Ticketing / Support MCP Server — simulates a customer support ticket system.
 
+State is persisted to a temp JSON file so it survives across subprocess
+invocations (langchain_mcp_adapters creates a new stdio session per tool call).
+
 Run:
     uv run tickets.py
 """
 
 import copy
+import json
+import os
 import random
+import tempfile
 from datetime import datetime, timezone
 
 from fastmcp import FastMCP
@@ -21,9 +27,10 @@ mcp = FastMCP(
 )
 
 # ---------------------------------------------------------------------------
-# Stateful data store (starts empty — tickets are created during interactions)
+# Stateful data store — persisted to a temp file between subprocess calls
 # ---------------------------------------------------------------------------
 
+_STATE_FILE = os.path.join(tempfile.gettempdir(), "mcp_tickets_state.json")
 _DEFAULT_TICKETS = {}
 
 VALID_CATEGORIES = [
@@ -38,13 +45,28 @@ VALID_PRIORITIES = ["low", "medium", "high", "urgent"]
 
 
 class Store:
-    """Mutable session state that can be reset between test runs."""
+    """Mutable session state persisted to disk between subprocess invocations."""
 
     def __init__(self):
-        self.reset()
+        self.tickets: dict = {}
+        self.load()
+
+    def load(self):
+        """Load state from disk, or use defaults if no file exists."""
+        if os.path.exists(_STATE_FILE):
+            with open(_STATE_FILE) as f:
+                self.tickets = json.load(f)
+        else:
+            self.tickets = copy.deepcopy(_DEFAULT_TICKETS)
+
+    def save(self):
+        """Persist current state to disk."""
+        with open(_STATE_FILE, "w") as f:
+            json.dump(self.tickets, f)
 
     def reset(self):
-        self.tickets: dict = copy.deepcopy(_DEFAULT_TICKETS)
+        self.tickets = copy.deepcopy(_DEFAULT_TICKETS)
+        self.save()
 
 
 store = Store()
@@ -105,6 +127,7 @@ def create_ticket(
         "resolution": None,
     }
     store.tickets[tid] = ticket
+    store.save()
     return {"ok": True, "message": f"Ticket {tid} created successfully", "ticket": ticket}
 
 
@@ -151,6 +174,7 @@ def update_ticket(
         changes.append("note added")
 
     ticket["updated_at"] = _now_iso()
+    store.save()
     return {"ok": True, "ticket_id": ticket_id, "changes": changes, "ticket": ticket}
 
 
@@ -175,6 +199,7 @@ def escalate_ticket(ticket_id: str, reason: str) -> dict:
         "author": "auto-agent",
         "timestamp": _now_iso(),
     })
+    store.save()
     return {"ok": True, "message": f"Ticket {ticket_id} escalated to human agent queue", "ticket": ticket}
 
 
@@ -213,6 +238,7 @@ def resolve_ticket(ticket_id: str, resolution: str) -> dict:
         "author": "auto-agent",
         "timestamp": _now_iso(),
     })
+    store.save()
     return {"ok": True, "message": f"Ticket {ticket_id} resolved", "ticket": ticket}
 
 

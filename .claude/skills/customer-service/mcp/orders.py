@@ -5,13 +5,17 @@
 """
 Mock Order & Account MCP Server — simulates an order management system.
 
+State is persisted to a temp JSON file so it survives across subprocess
+invocations (langchain_mcp_adapters creates a new stdio session per tool call).
+
 Run:
-    uv run server.py
-    # or with stdio transport:
-    uv run server.py --transport stdio
+    uv run orders.py
 """
 
 import copy
+import json
+import os
+import tempfile
 from datetime import datetime, timedelta, timezone
 
 from fastmcp import FastMCP
@@ -121,23 +125,52 @@ _DEFAULT_ORDERS = {
 }
 
 
+_STATE_FILE = os.path.join(tempfile.gettempdir(), "mcp_orders_state.json")
+
+
 class Store:
-    """Mutable session state that can be reset between test runs."""
+    """Mutable session state persisted to disk between subprocess invocations."""
 
     def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.customers: dict = copy.deepcopy(_DEFAULT_CUSTOMERS)
-        self.orders: dict = copy.deepcopy(_DEFAULT_ORDERS)
+        self.customers: dict = {}
+        self.orders: dict = {}
         self.refunds: list[dict] = []
-        self._email_index: dict = {
+        self._email_index: dict = {}
+        self.load()
+
+    def load(self):
+        """Load state from disk, or use defaults if no file exists."""
+        if os.path.exists(_STATE_FILE):
+            with open(_STATE_FILE) as f:
+                data = json.load(f)
+            self.customers = data.get("customers", copy.deepcopy(_DEFAULT_CUSTOMERS))
+            self.orders = data.get("orders", copy.deepcopy(_DEFAULT_ORDERS))
+            self.refunds = data.get("refunds", [])
+        else:
+            self.customers = copy.deepcopy(_DEFAULT_CUSTOMERS)
+            self.orders = copy.deepcopy(_DEFAULT_ORDERS)
+            self.refunds = []
+        self._email_index = {
             c["email"]: cid for cid, c in self.customers.items()
         }
+
+    def save(self):
+        """Persist current state to disk."""
+        with open(_STATE_FILE, "w") as f:
+            json.dump({"customers": self.customers, "orders": self.orders, "refunds": self.refunds}, f)
 
     def customer_by_email(self, email: str) -> dict | None:
         cid = self._email_index.get(email)
         return self.customers.get(cid) if cid else None
+
+    def reset(self):
+        self.customers = copy.deepcopy(_DEFAULT_CUSTOMERS)
+        self.orders = copy.deepcopy(_DEFAULT_ORDERS)
+        self.refunds = []
+        self._email_index = {
+            c["email"]: cid for cid, c in self.customers.items()
+        }
+        self.save()
 
 
 store = Store()
@@ -236,6 +269,7 @@ def refund(order_id: str, amount: float, reason: str) -> dict:
         order["refund_eligible"] = False
         order["status"] = "refunded"
 
+    store.save()
     return {"ok": True, "refund": refund_record}
 
 
