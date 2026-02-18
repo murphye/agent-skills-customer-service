@@ -7,15 +7,18 @@
 Skill Test Harness — run multi-turn agent tests via the `claude` CLI.
 
 Usage:
+    # Create a symbolic link for .claude
+    ln -s skills/customer-service .claude/skills/customer-service
+
     # Run all scenarios in a directory
-    uv run .claude/skills/customer-service/tests/run_test.py \
-    .claude/skills/customer-service/tests/scenarios/ \
-    -d .claude/skills/customer-service
+    uv run skills/customer-service/tests/run_test.py \
+    skills/customer-service/tests/scenarios/ \
+    -d skills/customer-service
 
     # Run a single scenario
-    uv run .claude/skills/customer-service/tests/run_test.py \
-    .claude/skills/customer-service/tests/scenarios/order_status_happy.yaml \
-    -d .claude/skills/customer-service
+    uv run skills/customer-service/tests/run_test.py \
+    skills/customer-service/tests/scenarios/refund-auto-approve.yaml \
+    -d skills/customer-service
 """
 
 import argparse
