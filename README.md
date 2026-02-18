@@ -1,36 +1,43 @@
 # Agent Skills Demo: Customer Service Agent
 
-A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), run in Claude, and powered by two local MCP servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
+A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local MCP servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
+
+The skill is platform-agnostic — it lives in `skills/` and can be consumed by Claude Code (via symlink), LangGraph, Codex, or any agent framework that reads markdown skill definitions.
 
 ## What This Demo Shows
 
 1. **Complex agentic logic in an Agent Skill** — a deterministic 10-step loop with state management, policy-driven decisions, and confidence-based routing.
 2. **MCP server integration** — two mock servers (orders + tickets) provide tool APIs that the agent calls autonomously.
 3. **Automated multi-turn testing** — a YAML-driven test harness runs conversations through the `claude` CLI and asserts on tool calls, outcomes, and response quality.
+4. **Portable skills** — the same skill runs in Claude Code, LangGraph, and other agent frameworks without modification.
 
 ## Project Structure
 
 ```
 .
-├── .mcp.json                                   # MCP server configuration
-└── .claude/skills/customer-service/
-    ├── SKILL.md                                # Skill definition & agentic loop
-    ├── mcp/
-    │   ├── orders.py                           # Order & customer management API
-    │   └── tickets.py                          # Support ticket system API
-    ├── references/
-    │   └── policies.md                         # Refund, escalation & priority policies
-    ├── assets/
-    │   └── response-templates.md               # Response phrasing templates
-    └── tests/
-        ├── README.md                           # Test harness documentation
-        ├── run_test.py                         # Test runner
-        └── scenarios/                          # YAML test plans
-            ├── order_status_happy.yaml
-            ├── refund_auto_approve.yaml
-            ├── refund_escalate_high_value.yaml
-            ├── escalate_max_retries.yaml
-            └── new_issue_mid_conversation.yaml
+├── .mcp.json                                   # MCP server config (Claude Code)
+├── mcp/                                        # MCP servers (shared infrastructure)
+│   ├── orders.py                               # Order & customer management API
+│   └── tickets.py                              # Support ticket system API
+├── skills/customer-service/                    # Skill (platform-agnostic)
+│   ├── SKILL.md                                # Skill definition & agentic loop
+│   ├── references/
+│   │   └── policies.md                         # Refund, escalation & priority policies
+│   ├── assets/
+│   │   └── response-templates.md               # Response phrasing templates
+│   └── tests/
+│       ├── README.md                           # Test harness documentation
+│       ├── run_test.py                         # Test runner
+│       └── scenarios/                          # YAML test plans
+│           ├── order_status_happy.yaml
+│           ├── refund_auto_approve.yaml
+│           ├── refund_escalate_high_value.yaml
+│           ├── escalate_max_retries.yaml
+│           └── new_issue_mid_conversation.yaml
+├── .claude/skills/customer-service -> ../../skills/customer-service  # Symlink
+└── langgraph/                                  # LangGraph Server integration
+    ├── graph.py                                # LangGraph entrypoint
+    └── langgraph.json                          # LangGraph dev config
 ```
 
 ## Prerequisites
@@ -120,15 +127,62 @@ flowchart TD
 
 ### Business Policies
 
-The agent enforces policies defined in [`references/policies.md`](.claude/skills/customer-service/references/policies.md):
+The agent enforces policies defined in [`references/policies.md`](skills/customer-service/references/policies.md):
 
 - **Refunds**: auto-approved for delivered orders within 30 days up to $150; escalated above $150; defective products auto-approved up to $200
 - **Escalation triggers**: customer requests human, high-value refund, billing dispute, gold-tier dissatisfaction, 3 failed retries
 - **Priority assignment**: gold-tier and high-value orders get `high`; defective/safety issues get `urgent`
 
-## Running the Skill
+## Setup
 
-1. Open a terminal in this project directory and start Claude Code:
+### Claude Code
+
+Claude Code discovers skills under `.claude/skills/`. This project stores the skill in `skills/` (platform-agnostic) and uses a symlink so Claude Code finds it automatically.
+
+The symlink is already included in the repo. If you need to recreate it:
+
+```bash
+ln -s ../../skills/customer-service .claude/skills/customer-service
+```
+
+### LangGraph
+
+The skill can also be served via LangGraph for use with web-based chat UIs (e.g., [Agent Chat](https://agentchat.vercel.app)).
+
+1. Install the LangGraph CLI with the required dependencies:
+
+   ```bash
+   uv tool install "langgraph-cli[inmem]" --with deepagents --with langchain_mcp_adapters
+   ```
+
+2. Create a `.env` file in the project root with your API keys:
+
+   ```
+   ANTHROPIC_API_KEY=sk-ant-...
+   LANGSMITH_API_KEY=lsv2_...        # optional — enables tracing
+   LANGSMITH_TRACING=true             # optional
+   LANGSMITH_PROJECT=customer-service # optional
+   ```
+
+3. Start the server:
+
+   ```bash
+   cd langgraph && langgraph dev
+   ```
+
+This starts a LangGraph Platform API on port 2024. The agent loads the skill via progressive disclosure and connects to both MCP servers. If [LangSmith](https://smith.langchain.com) keys are provided, all traces are recorded for debugging.
+
+4. Open [Agent Chat](https://agentchat.vercel.app) in your browser and configure the connection:
+
+   - **Deployment URL**: `http://localhost:2024`
+   - **Assistant ID**: `agent`
+   - **LangSmith API Key**: leave blank (not needed for local dev)
+
+   You can now chat with the customer-service agent through the web UI. Try the same sample prompts listed below.
+
+## Running the Skill (Claude)
+
+1. Open a terminal in this project directory and start the `claude` CLI:
 
    ```bash
    claude
@@ -148,11 +202,11 @@ Try these to exercise different paths through the agentic loop:
 
 | Prompt | Expected Behavior |
 |--------|-------------------|
-| `/customer-service I'm Bob Martinez (bob.m@example.com). Where is my monitor?` | Looks up account, reports order ORD-5003 is processing. No ticket created. |
-| `/customer-service I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.` | Creates ticket, auto-approves refund ($129.99 <= $200 defective threshold), resolves ticket. |
-| `/customer-service I'm Alice (alice@example.com). I was double-charged for my keyboard order ORD-5002.` | Creates ticket, immediately escalates (billing dispute trigger). |
-| `/customer-service Where is my order?` | Asks for email/order ID first (no identifier provided). |
-| `/customer-service I'm Carol Wei (carol.wei@example.com). I'd like a refund for order ORD-5004.` | Checks eligibility: $79.99 delivered within 30 days → auto-approves refund. |
+| `I'm Bob Martinez (bob.m@example.com). Where is my monitor?` | Looks up account, reports order ORD-5003 is processing. No ticket created. |
+| `I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.` | Creates ticket, auto-approves refund ($129.99 <= $200 defective threshold), resolves ticket. |
+| `I'm Alice (alice@example.com). I was double-charged for my keyboard order ORD-5002.` | Creates ticket, immediately escalates (billing dispute trigger). |
+| `Where is my order?` | Asks for email/order ID first (no identifier provided). |
+| `I'm Carol Wei (carol.wei@example.com). I'd like a refund for order ORD-5004.` | Checks eligibility: $79.99 delivered within 30 days → auto-approves refund. |
 
 ### Mock Customers
 
@@ -183,26 +237,26 @@ The test harness sends multi-turn conversations through the `claude` CLI and val
 
 ```bash
 # Run a single scenario
-uv run .claude/skills/customer-service/tests/run_test.py \
-  .claude/skills/customer-service/tests/scenarios/order_status_happy.yaml \
-  --skill-dir .claude/skills/customer-service
+uv run skills/customer-service/tests/run_test.py \
+  skills/customer-service/tests/scenarios/order_status_happy.yaml \
+  --skill-dir skills/customer-service
 
 # Run all scenarios
-uv run .claude/skills/customer-service/tests/run_test.py \
-  .claude/skills/customer-service/tests/scenarios/ \
-  -d .claude/skills/customer-service
+uv run skills/customer-service/tests/run_test.py \
+  skills/customer-service/tests/scenarios/ \
+  -d skills/customer-service
 
 # Verbose output with JSON report
-uv run .claude/skills/customer-service/tests/run_test.py \
-  .claude/skills/customer-service/tests/scenarios/ \
-  -d .claude/skills/customer-service \
+uv run skills/customer-service/tests/run_test.py \
+  skills/customer-service/tests/scenarios/ \
+  -d skills/customer-service \
   --verbose \
   --json-report results.json
 
 # Pass extra flags to claude (e.g., model selection, turn limit)
-uv run .claude/skills/customer-service/tests/run_test.py \
-  .claude/skills/customer-service/tests/scenarios/escalate_max_retries.yaml \
-  -d .claude/skills/customer-service \
+uv run skills/customer-service/tests/run_test.py \
+  skills/customer-service/tests/scenarios/escalate_max_retries.yaml \
+  -d skills/customer-service \
   --extra-flags --model sonnet --max-turns 20
 ```
 
@@ -220,7 +274,7 @@ uv run .claude/skills/customer-service/tests/run_test.py \
 
 ### Writing New Tests
 
-Test plans are YAML files. See the [test harness README](.claude/skills/customer-service/tests/README.md) for the full format. Here's the structure:
+Test plans are YAML files. See the [test harness README](skills/customer-service/tests/README.md) for the full format. Here's the structure:
 
 ```yaml
 name: my-test

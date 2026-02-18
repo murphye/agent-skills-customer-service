@@ -2,11 +2,11 @@
   "mcpServers": {
     "orders": {
       "command": "uv",
-      "args": ["run", ".claude/skills/customer-service/mcp/orders.py"]
+      "args": ["run", "mcp/orders.py"]
     },
     "tickets": {
       "command": "uv",
-      "args": ["run", ".claude/skills/customer-service/mcp/tickets.py"]
+      "args": ["run", "mcp/tickets.py"]
     }
   }
 }

@@ -24,12 +24,12 @@ client = MultiServerMCPClient(
         "orders": {
             "transport": "stdio",
             "command": "uv",
-            "args": ["run", "../.claude/skills/customer-service/mcp/orders.py"],
+            "args": ["run", "../mcp/orders.py"],
         },
         "tickets": {
             "transport": "stdio",
             "command": "uv",
-            "args": ["run", "../.claude/skills/customer-service/mcp/tickets.py"],
+            "args": ["run", "../mcp/tickets.py"],
         },
     }
 )
@@ -38,7 +38,7 @@ mcp_tools = asyncio.new_event_loop().run_until_complete(client.get_tools())
 agent = create_deep_agent(
     model="claude-sonnet-4-6",
     tools=mcp_tools,
-    skills=[".claude/skills/"],
+    skills=["skills/"],
     backend=FilesystemBackend(root_dir=".."),
     system_prompt="You are a customer service agent. Always read and follow the customer-service skill before responding.",
 )
