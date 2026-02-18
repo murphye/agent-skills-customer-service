@@ -163,7 +163,7 @@ The agent enforces policies defined in [`references/policies.md`](skills/custome
 - **Escalation triggers**: customer requests human, high-value refund, billing dispute, gold-tier dissatisfaction, 3 failed retries
 - **Priority assignment**: gold-tier and high-value orders get `high`; defective/safety issues get `urgent`
 
-## Setup
+## Setup and Run
 
 ### Claude Code
 
@@ -174,6 +174,22 @@ The symlink is already included in the repo. If you need to recreate it:
 ```bash
 mkdir -p .claude && ln -s ../skills .claude/skills
 ```
+
+#### Run Claude Code with the `customer-service` skill
+
+1. Open a terminal in this project directory and start the `claude` CLI:
+
+   ```bash
+   claude
+   ```
+
+2. Run the `/mcp` command to verify both MCP servers (`orders` and `tickets`) are connected. If either shows as disconnected, select it to reconnect.
+
+3. Invoke the skill with `/customer-service` or just describe a customer support scenario. On the first run, Claude Code will prompt you to approve calls to the MCP server tools — you can approve them individually or select "Always allow" to skip the prompts for the rest of the session.
+
+   ```
+   /customer-service I'm Bob Martinez (bob.m@example.com). Where is my monitor?
+   ```
 
 ### LangGraph
 
@@ -212,21 +228,6 @@ The skill can also be served via LangGraph (via Deep Agents) for use with web-ba
 
    You can now chat with the customer-service agent through the web UI. Try the same sample prompts listed below.
 
-## Running the Skill (Claude)
-
-1. Open a terminal in this project directory and start the `claude` CLI:
-
-   ```bash
-   claude
-   ```
-
-2. Run `/mcp` to verify both MCP servers (`orders` and `tickets`) are connected. If either shows as disconnected, select it to reconnect.
-
-3. Invoke the skill with `/customer-service` or just describe a customer support scenario. On the first run, Claude Code will prompt you to approve calls to the MCP server tools — you can approve them individually or select "Always allow" to skip the prompts for the rest of the session.
-
-   ```
-   /customer-service I'm Bob Martinez (bob.m@example.com). Where is my monitor?
-   ```
 
 ### Sample Prompts
 
