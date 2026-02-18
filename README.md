@@ -41,9 +41,9 @@ This `customer-service` agent demo is comprised of a [10-step workflow](skills/c
 
 The included [test harness](skills/customer-service/tests/README.md) runs multi-turn conversation tests against the workflow via simple YAML files — covering happy paths, escalations, retries, and topic changes — with assertions on tool calls, outcomes, and response quality.
 
-## Concept Visual Representation
+## Visual Representation
 
-<a href="img/customer-service-agent-skill.png"><img src="img/customer-service-agent-skill.png" height="800"></a>
+<a href="img/customer-service-agent-skill.png"><img src="img/customer-service-agent-skill.png" height="1200"></a>
 
 ## Project Structure
 
