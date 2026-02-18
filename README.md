@@ -2,24 +2,40 @@
 
 A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local MCP servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
 
-The skill is platform-agnostic — it lives in `skills/` and can be consumed by Claude Code (via symlink), LangGraph (with Deep Agents), Codex, or any agent framework that reads markdown skill definitions and can connect to MCP servers.
+The skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
+
+## Quick Start (`claude`)
+
+```bash
+git clone https://github.com/murphye/agent-skills-demo && cd agent-skills-demo
+claude
+```
+In `claude`, enable the MCP Servers, as they require approval.
+
+```
+orders ✔
+tickets ✔
+```
+
+After the MCP servers are enabled, type:
+```
+/customer-service I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
+```
+
+This will kick off a rudimentary customer service chat session using `claude`. For a different chat experience, see below for running a LangGraph server and a web-based chat interface.
 
 ## What This Demo Shows
 
 1. **Complex agentic logic in an Agent Skill** — a deterministic 10-step workflow with state management, policy-driven decisions, and confidence-based routing.
-2. **MCP server integration** — two mock servers (orders + tickets) provide tool APIs that the agent calls autonomously.
+2. **MCP server integration** — two mock servers (**orders** + **tickets**) provide tool APIs that the agent calls autonomously.
 3. **Automated multi-turn testing** — a YAML-driven test harness runs conversations through the `claude` CLI and asserts on tool calls, outcomes, and response quality.
-4. **Portable skills** — the same skill runs in Claude Code, LangGraph, and other agent frameworks without modification.
+4. **Portable skills** — the same skill runs in Claude Code CLI, LangGraph (using Deep Agents), and other agent frameworks without modification.
 
 ## Why This Demo is Cool
 
-This entire customer service agent — with its 10-step agentic workflow, confidence-based routing, retry logic, escalation rules, and policy enforcement — is defined in a single markdown file (`SKILL.md`). There is no application code for the agent graph itself. No nodes, no edges, no state schemas, no conditional routing functions. The LLM reads the markdown instructions and executes the workflow.
+This entire agent — 10-step workflow, confidence routing, retry logic, escalation rules, policy enforcement — is defined in a single markdown file. No Python graph code, no state schemas, no conditional edge wiring. Building the equivalent as a traditional LangGraph graph would require lots of code. With Agent Skills, the "graph" is the markdown — changes are a text edit, not a code refactor.
 
-Building the equivalent agent as a traditional LangGraph graph would require hundreds of lines of Python: defining state classes, wiring up conditional edges between nodes, implementing each step as a function, managing retry counters and confidence flags in a typed state object, and writing custom routing logic for every decision point. That's a significant engineering investment for a graph with 10+ nodes, multiple cycles, and branching paths.
-
-With Agent Skills, the "graph" is the markdown. Changes to the workflow are a text edit, not a code refactor. And because the skill is just a file, it's portable — the same `SKILL.md` runs in Claude Code, LangGraph via Deep Agents, or any other framework that can read it.
-
-On top of that, the included test harness lets you run a battery of multi-turn conversation tests against the agentic workflow. Each test scenario exercises a different path through the graph — happy paths, escalations, retries, mid-conversation topic changes — and validates tool calls, outcomes, and response quality. This gives you regression coverage over a complex agent workflow without writing any test infrastructure beyond simple YAML files.
+The included test harness runs multi-turn conversation tests against the workflow via simple YAML files — covering happy paths, escalations, retries, and topic changes — with assertions on tool calls, outcomes, and response quality.
 
 ## Project Structure
 
@@ -157,7 +173,7 @@ mkdir -p .claude && ln -s ../skills .claude/skills
 
 ### LangGraph
 
-The skill can also be served via LangGraph for use with web-based chat UIs (e.g., [Agent Chat](https://agentchat.vercel.app)).
+The skill can also be served via LangGraph (via Deep Agents) for use with web-based chat UIs (e.g., [Agent Chat](https://agentchat.vercel.app)).
 
 1. Install the LangGraph CLI with the required dependencies:
 
@@ -169,9 +185,9 @@ The skill can also be served via LangGraph for use with web-based chat UIs (e.g.
 
    ```
    ANTHROPIC_API_KEY=sk-ant-...
-   LANGSMITH_API_KEY=lsv2_...        # optional — enables tracing
-   LANGSMITH_TRACING=true             # optional
-   LANGSMITH_PROJECT=customer-service # optional
+   LANGSMITH_API_KEY=lsv2_...          # optional — enables tracing
+   LANGSMITH_TRACING=true              # optional
+   LANGSMITH_PROJECT=customer-service  # optional
    ```
 
 3. Start the server:
