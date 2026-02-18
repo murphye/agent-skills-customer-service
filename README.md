@@ -16,11 +16,10 @@ A non-trivial customer service agent implemented with [Agent Skills](https://age
 └── .claude/skills/customer-service/
     ├── SKILL.md                                # Skill definition & agentic loop
     ├── mcp/
-    │   ├── order_mcp.py                        # Order & customer management API
-    │   └── ticket_mcp.py                       # Support ticket system API
+    │   ├── orders.py                           # Order & customer management API
+    │   └── tickets.py                          # Support ticket system API
     ├── references/
-    │   ├── policies.md                         # Refund, escalation & priority policies
-    │   └── REFERENCE.md                        # API reference
+    │   └── policies.md                         # Refund, escalation & priority policies
     ├── assets/
     │   └── response-templates.md               # Response phrasing templates
     └── tests/
@@ -38,8 +37,7 @@ A non-trivial customer service agent implemented with [Agent Skills](https://age
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated
 - Python 3.10+
-- [`uv`](https://docs.astral.sh/uv/) (used to run the MCP servers)
-- `pyyaml` (`pip install pyyaml`) — required only for running tests
+- [`uv`](https://docs.astral.sh/uv/) (used to run the MCP servers and tests)
 
 ## How It Works
 
@@ -49,8 +47,8 @@ Two lightweight [FastMCP](https://github.com/jlowin/fastmcp) servers provide the
 
 | Server | Tools | Purpose |
 |--------|-------|---------|
-| **order-mcp** | `lookup_customer`, `get_order`, `order_history`, `refund`, `reset_state` | Customer & order management |
-| **ticket-mcp** | `create_ticket`, `get_ticket`, `update_ticket`, `escalate_ticket`, `list_tickets`, `resolve_ticket`, `reset_state` | Support ticket lifecycle |
+| **orders** | `lookup_customer`, `get_order`, `order_history`, `refund`, `reset_state` | Customer & order management |
+| **tickets** | `create_ticket`, `get_ticket`, `update_ticket`, `escalate_ticket`, `list_tickets`, `resolve_ticket`, `reset_state` | Support ticket lifecycle |
 
 Both servers use in-memory mock data (3 customers, 4 orders) that resets between test runs.
 
@@ -136,13 +134,13 @@ The agent enforces policies defined in [`references/policies.md`](.claude/skills
    claude
    ```
 
-2. Invoke the skill with `/customer-service` or just describe a customer support scenario:
+2. Run `/mcp` to verify both MCP servers (`orders` and `tickets`) are connected. If either shows as disconnected, select it to reconnect.
+
+3. Invoke the skill with `/customer-service` or just describe a customer support scenario. On the first run, Claude Code will prompt you to approve calls to the MCP server tools — you can approve them individually or select "Always allow" to skip the prompts for the rest of the session.
 
    ```
    /customer-service I'm Bob Martinez (bob.m@example.com). Where is my monitor?
    ```
-
-3. **Authorize MCP tool access** — on the first run, Claude Code will prompt you to approve calls to the `order-mcp` and `ticket-mcp` server tools. You can approve them individually or select "Always allow" to skip the prompts for the rest of the session.
 
 ### Sample Prompts
 
@@ -184,27 +182,31 @@ The test harness sends multi-turn conversations through the `claude` CLI and val
 ### Commands
 
 ```bash
-cd .claude/skills/customer-service/tests
-
 # Run a single scenario
-python run_test.py scenarios/order_status_happy.yaml \
-  --skill-dir ..
+uv run .claude/skills/customer-service/tests/run_test.py \
+  .claude/skills/customer-service/tests/scenarios/order_status_happy.yaml \
+  --skill-dir .claude/skills/customer-service
 
 # Run all scenarios
-python run_test.py scenarios/ \
-  -d ..
+uv run .claude/skills/customer-service/tests/run_test.py \
+  .claude/skills/customer-service/tests/scenarios/ \
+  -d .claude/skills/customer-service
 
 # Verbose output with JSON report
-python run_test.py scenarios/ \
-  -d .. \
+uv run .claude/skills/customer-service/tests/run_test.py \
+  .claude/skills/customer-service/tests/scenarios/ \
+  -d .claude/skills/customer-service \
   --verbose \
   --json-report results.json
 
 # Pass extra flags to claude (e.g., model selection, turn limit)
-python run_test.py scenarios/escalate_max_retries.yaml \
-  -d .. \
+uv run .claude/skills/customer-service/tests/run_test.py \
+  .claude/skills/customer-service/tests/scenarios/escalate_max_retries.yaml \
+  -d .claude/skills/customer-service \
   --extra-flags --model sonnet --max-turns 20
 ```
+
+`uv run` automatically installs the script's declared dependencies (like `pyyaml`) in an isolated environment — no manual `pip install` needed.
 
 ### Test Scenarios
 
@@ -233,9 +235,9 @@ turns:
 
 expected_tool_calls:
   must_include:
-    - pattern: "mcp__order-mcp__lookup_customer.*email=alice@example\\.com"
+    - pattern: "mcp__orders__lookup_customer.*email=alice@example\\.com"
   must_not_include:
-    - pattern: "mcp__order-mcp__refund"
+    - pattern: "mcp__orders__refund"
 
 expected_outcomes:
   customer_identified: "C-1001"
