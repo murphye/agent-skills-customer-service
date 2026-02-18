@@ -10,14 +10,14 @@ The `customer-service` skill is platform-agnostic — it lives in `skills/` and 
 git clone https://github.com/murphye/agent-skills-customer-service && cd agent-skills-customer-service
 claude
 ```
-In `claude`, enable the MCP Servers, as they require approval.
+In `claude`, enable the MCP clients, as they require approval.
 
 ```
 orders ✔
 tickets ✔
 ```
 
-After the MCP servers are enabled, type:
+After the MCP clients are enabled, type:
 ```
 /customer-service I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
 ```
