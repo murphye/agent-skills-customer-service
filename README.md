@@ -7,7 +7,7 @@ The skill is platform-agnostic — it lives in `skills/` and can be consumed by 
 ## Quick Start (`claude`)
 
 ```bash
-git clone https://github.com/murphye/agent-skills-demo && cd agent-skills-demo
+git clone https://github.com/murphye/agent-skills-customer-service && cd agent-skills-customer-service
 claude
 ```
 In `claude`, enable the MCP Servers, as they require approval.
