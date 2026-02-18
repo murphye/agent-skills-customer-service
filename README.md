@@ -33,7 +33,7 @@ This will kick off a rudimentary customer service chat session using `claude`. F
 
 ## Why This Demo is Cool
 
-This entire agent — 10-step workflow, confidence routing, retry logic, escalation rules, policy enforcement — is defined in a single markdown file. No Python graph code, no state schemas, no conditional edge wiring. Building the equivalent as a traditional LangGraph graph would require lots of code. With Agent Skills, the "graph" is the markdown — changes are a text edit, not a code refactor.
+This entire agent — [10-step workflow](skills/customer-service/SKILL.md), confidence routing, retry logic, escalation rules, [policy enforcement](skills/customer-service/references/policies.md), and [response templates](skills/customer-service/assets/response-templates.md) is defined in markdown files. No Python graph code, no state schemas, no conditional edge wiring. Building the equivalent as a traditional LangGraph graph would require lots of code. With Agent Skills, the "graph" is the markdown — changes are a text edit, not a code refactor.
 
 The included test harness runs multi-turn conversation tests against the workflow via simple YAML files — covering happy paths, escalations, retries, and topic changes — with assertions on tool calls, outcomes, and response quality.
 
@@ -297,33 +297,3 @@ uv run skills/customer-service/tests/run_test.py \
 | High-value escalation | `refund_escalate_high_value.yaml` | Billing dispute triggers immediate escalation |
 | Max-retry escalation | `escalate_max_retries.yaml` | 3 failed retries force escalation |
 | Mid-conversation topic change | `new_issue_mid_conversation.yaml` | Agent resets state for a new issue |
-
-### Writing New Tests
-
-Test plans are YAML files. See the [test harness README](skills/customer-service/tests/README.md) for the full format. Here's the structure:
-
-```yaml
-name: my-test
-description: What this test verifies.
-
-turns:
-  - role: customer
-    message: "Hi, I need help with..."
-  - role: await_agent
-  - role: customer
-    message: "Thanks, that works!"
-
-expected_tool_calls:
-  must_include:
-    - pattern: "mcp__orders__lookup_customer.*email=alice@example\\.com"
-  must_not_include:
-    - pattern: "mcp__orders__refund"
-
-expected_outcomes:
-  customer_identified: "C-1001"
-  escalated: false
-
-quality_checks:
-  - "Agent greeted the customer by first name"
-  - "Agent explained the resolution clearly"
-```
