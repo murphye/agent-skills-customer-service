@@ -1,6 +1,6 @@
 # Agent Skills Demo: Customer Service Agent
 
-A non-trivial customer service agent implemented with , powered by two local [MCP](https://modelcontextprotocol.io/) servers. It demonstrates that [Agent Skills](https://agentskills.io) can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
+A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local [MCP](https://modelcontextprotocol.io/) servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
 
 The skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
 
@@ -22,11 +22,13 @@ After the MCP servers are enabled, type:
 /customer-service I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
 ```
 
-This will kick off a rudimentary customer service chat session using `claude`. For a different chat experience, see below for running a LangGraph server and a web-based chat interface.
+This will kick off a rudimentary customer service chat session using `claude`. This is a technology demonstration for how to use Agent Skills and MCP with Claude Code for the `customer-service` skill.
+
+For a better chat experience, see below for running a LangGraph server and a web-based chat interface. This is closer to how a real customer service chatbot would operate.
 
 ## What This Demo Shows
 
-1. **Complex agentic logic in an Agent Skill** — a [10-step workflow](skills/customer-service/SKILL.md) with [policy-driven decisions]((skills/customer-service/references/policies.md)) and confidence-based routing.
+1. **Complex agentic logic in an Agent Skill** — a [10-step workflow](skills/customer-service/SKILL.md) with [policy-driven decisions]((skills/customer-service/references/policies.md)) and confidence-based routing, all defined in Markdown text.
 2. **MCP server integration** — two mock servers (**orders** + **tickets**) provide tool APIs that the agent calls autonomously.
 3. **Automated multi-turn testing** — a YAML-driven test harness runs conversations through the `claude` CLI and asserts on tool calls, outcomes, and response quality.
 4. **Portable skills** — the same skill runs in Claude Code CLI, LangGraph (using Deep Agents), and other agent frameworks without modification.
