@@ -1,6 +1,6 @@
 # Agent Skills Demo: Customer Service Agent
 
-A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local MCP servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
+A non-trivial customer service agent implemented with , powered by two local MCP servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
 
 The skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
 
@@ -33,9 +33,11 @@ This will kick off a rudimentary customer service chat session using `claude`. F
 
 ## Why This Demo is Cool
 
-This entire agent — [10-step workflow](skills/customer-service/SKILL.md), confidence routing, retry logic, escalation rules, [policy enforcement](skills/customer-service/references/policies.md), and [response templates](skills/customer-service/assets/response-templates.md) is defined in markdown files. No Python graph code, no state schemas, no conditional edge wiring. Building the equivalent as a traditional LangGraph graph would require lots of code. With Agent Skills, the "graph" is the markdown — changes are a text edit, not a code refactor.
+Agents are moving towards low-code solutions, and this demo aims to show the future of agent implementation. [Agent Skills](https://agentskills.io) make building agents with minimal code possible.
 
-The included test harness runs multi-turn conversation tests against the workflow via simple YAML files — covering happy paths, escalations, retries, and topic changes — with assertions on tool calls, outcomes, and response quality.
+This `customer-service` agent demo is comprised of a [10-step workflow](skills/customer-service/SKILL.md), confidence routing, retry logic, escalation rules, [policy enforcement](skills/customer-service/references/policies.md), and [response templates](skills/customer-service/assets/response-templates.md) is defined in markdown files. No Python graph code, no state schemas, no conditional edge wiring. Building the equivalent as a traditional LangGraph graph would require lots of code. With Agent Skills, the "graph" is the markdown. Therefore, changes are a text edit, not a code refactor.
+
+The included [test harness](skills/customer-service/tests/README.md) runs multi-turn conversation tests against the workflow via simple YAML files — covering happy paths, escalations, retries, and topic changes — with assertions on tool calls, outcomes, and response quality.
 
 ## Project Structure
 
