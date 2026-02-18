@@ -17,7 +17,7 @@ from datetime import datetime, timedelta, timezone
 from fastmcp import FastMCP
 
 mcp = FastMCP(
-    "Mock Order API",
+    "Orders",
     instructions="Simulated order management system for testing",
 )
 

@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from fastmcp import FastMCP
 
 mcp = FastMCP(
-    "Mock Ticket API",
+    "Tickets",
     instructions="Simulated customer support ticket system for testing",
 )
 
