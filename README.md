@@ -41,6 +41,10 @@ This `customer-service` agent demo is comprised of a [10-step workflow](skills/c
 
 The included [test harness](skills/customer-service/tests/README.md) runs multi-turn conversation tests against the workflow via simple YAML files — covering happy paths, escalations, retries, and topic changes — with assertions on tool calls, outcomes, and response quality.
 
+## Concept Visual Representation
+
+<a href="img/customer-service-agent-skill.png"><img src="img/customer-service-agent-skill.png" height="800"></a>
+
 ## Project Structure
 
 ```
@@ -87,7 +91,13 @@ Two lightweight [FastMCP](https://github.com/jlowin/fastmcp) servers provide the
 | **orders** | `lookup_customer`, `get_order`, `order_history`, `refund`, `reset_state` | Customer & order management |
 | **tickets** | `create_ticket`, `get_ticket`, `update_ticket`, `escalate_ticket`, `list_tickets`, `resolve_ticket`, `reset_state` | Support ticket lifecycle |
 
-Both servers use in-memory mock data (3 customers, 4 orders) that resets between test runs.
+Both servers use mock data (3 customers, 4 orders). When run via LangGraph, state is persisted to temp files so it survives across tool calls. To reset the mock data back to defaults:
+
+```bash
+rm -f /tmp/mcp_tickets_state.json /tmp/mcp_orders_state.json
+```
+
+When run via Claude Code (stdio), each session starts fresh automatically.
 
 ### The Agentic Workflow
 
