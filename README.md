@@ -2,14 +2,24 @@
 
 A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local MCP servers. It demonstrates that Agent Skills can handle complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests.
 
-The skill is platform-agnostic — it lives in `skills/` and can be consumed by Claude Code (via symlink), LangGraph, Codex, or any agent framework that reads markdown skill definitions.
+The skill is platform-agnostic — it lives in `skills/` and can be consumed by Claude Code (via symlink), LangGraph (with Deep Agents), Codex, or any agent framework that reads markdown skill definitions and can connect to MCP servers.
 
 ## What This Demo Shows
 
-1. **Complex agentic logic in an Agent Skill** — a deterministic 10-step loop with state management, policy-driven decisions, and confidence-based routing.
+1. **Complex agentic logic in an Agent Skill** — a deterministic 10-step workflow with state management, policy-driven decisions, and confidence-based routing.
 2. **MCP server integration** — two mock servers (orders + tickets) provide tool APIs that the agent calls autonomously.
 3. **Automated multi-turn testing** — a YAML-driven test harness runs conversations through the `claude` CLI and asserts on tool calls, outcomes, and response quality.
 4. **Portable skills** — the same skill runs in Claude Code, LangGraph, and other agent frameworks without modification.
+
+## Why This Demo is Cool
+
+This entire customer service agent — with its 10-step agentic workflow, confidence-based routing, retry logic, escalation rules, and policy enforcement — is defined in a single markdown file (`SKILL.md`). There is no application code for the agent graph itself. No nodes, no edges, no state schemas, no conditional routing functions. The LLM reads the markdown instructions and executes the workflow.
+
+Building the equivalent agent as a traditional LangGraph graph would require hundreds of lines of Python: defining state classes, wiring up conditional edges between nodes, implementing each step as a function, managing retry counters and confidence flags in a typed state object, and writing custom routing logic for every decision point. That's a significant engineering investment for a graph with 10+ nodes, multiple cycles, and branching paths.
+
+With Agent Skills, the "graph" is the markdown. Changes to the workflow are a text edit, not a code refactor. And because the skill is just a file, it's portable — the same `SKILL.md` runs in Claude Code, LangGraph via Deep Agents, or any other framework that can read it.
+
+On top of that, the included test harness lets you run a battery of multi-turn conversation tests against the agentic workflow. Each test scenario exercises a different path through the graph — happy paths, escalations, retries, mid-conversation topic changes — and validates tool calls, outcomes, and response quality. This gives you regression coverage over a complex agent workflow without writing any test infrastructure beyond simple YAML files.
 
 ## Project Structure
 
@@ -20,7 +30,7 @@ The skill is platform-agnostic — it lives in `skills/` and can be consumed by 
 │   ├── orders.py                               # Order & customer management API
 │   └── tickets.py                              # Support ticket system API
 ├── skills/customer-service/                    # Skill (platform-agnostic)
-│   ├── SKILL.md                                # Skill definition & agentic loop
+│   ├── SKILL.md                                # Skill definition & agentic workflow
 │   ├── references/
 │   │   └── policies.md                         # Refund, escalation & priority policies
 │   ├── assets/
@@ -59,9 +69,9 @@ Two lightweight [FastMCP](https://github.com/jlowin/fastmcp) servers provide the
 
 Both servers use in-memory mock data (3 customers, 4 orders) that resets between test runs.
 
-### The Agentic Loop
+### The Agentic Workflow
 
-The skill defines a deterministic 10-step loop that Claude follows exactly:
+The skill defines a deterministic 10-step workflow that Claude follows exactly:
 
 | Step | Name | What Happens |
 |------|------|-------------|
@@ -77,7 +87,7 @@ The skill defines a deterministic 10-step loop that Claude follows exactly:
 | 9 | **Close** | Resolve the ticket |
 | 10 | **Follow-up** | Queue a satisfaction survey |
 
-#### Agentic Loop Diagram
+#### Agentic Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -88,9 +98,9 @@ flowchart TD
     Ask -->|Customer replies| S1
     S1 -->|Customer found| S2
 
-    S2[2. Classify Intent<br/>refund · order-status · billing<br/>product-defect · shipping · account<br/>general-inquiry · complaint]
-    S2 -->|Informational<br/>order-status / shipping /<br/>general-inquiry| S3
-    S2 -->|Actionable<br/>refund / billing / product-defect /<br/>account / complaint| Ticket[Create or reuse ticket]
+    S2["2. Classify Intent<br/><i>refund | order-status | billing<br/>product-defect | shipping | account<br/>general-inquiry | complaint</i>"]
+    S2 -->|Informational| S3
+    S2 -->|Actionable| Ticket[Create or reuse ticket]
     Ticket --> S3
 
     S3[3. Attempt Resolution<br/>Gather data · Diagnose · Set confidence]
@@ -142,7 +152,7 @@ Claude Code discovers skills under `.claude/skills/`. This project stores the sk
 The symlink is already included in the repo. If you need to recreate it:
 
 ```bash
-ln -s ../../skills/customer-service .claude/skills/customer-service
+ln -s skills/customer-service .claude/skills/customer-service
 ```
 
 ### LangGraph
@@ -198,7 +208,7 @@ This starts a LangGraph Platform API on port 2024. The agent loads the skill via
 
 ### Sample Prompts
 
-Try these to exercise different paths through the agentic loop:
+Try these to exercise different paths through the agentic workflow:
 
 | Prompt | Expected Behavior |
 |--------|-------------------|
