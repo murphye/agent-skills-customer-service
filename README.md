@@ -163,9 +163,9 @@ The agent enforces policies defined in [`references/policies.md`](skills/custome
 - **Escalation triggers**: customer requests human, high-value refund, billing dispute, gold-tier dissatisfaction, 3 failed retries
 - **Priority assignment**: gold-tier and high-value orders get `high`; defective/safety issues get `urgent`
 
-## Setup and Run
+## Run the Agent
 
-### Claude Code
+### Claude Code CLI
 
 Claude Code discovers skills under `.claude/skills/`. This project stores the skill in `skills/` (platform-agnostic) and uses a symlink so Claude Code finds it automatically.
 
@@ -191,7 +191,7 @@ mkdir -p .claude && ln -s ../skills .claude/skills
    /customer-service I'm Bob Martinez (bob.m@example.com). Where is my monitor?
    ```
 
-### LangGraph
+### LangGraph Server
 
 The skill can also be served via LangGraph (via Deep Agents) for use with web-based chat UIs (e.g., [Agent Chat](https://agentchat.vercel.app)).
 
