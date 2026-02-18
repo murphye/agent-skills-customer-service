@@ -64,7 +64,7 @@ The included [test harness](skills/customer-service/tests/README.md) runs multi-
 │           ├── refund_escalate_high_value.yaml
 │           ├── escalate_max_retries.yaml
 │           └── new_issue_mid_conversation.yaml
-├── .claude/skills -> ../skills                    # Symlink for Claude Code
+├── .claude/skills -> ../skills                 # Symlink for Claude Code
 └── langgraph/                                  # LangGraph Server integration
     ├── graph.py                                # LangGraph entrypoint
     └── langgraph.json                          # LangGraph dev config
@@ -200,7 +200,7 @@ The skill can also be served via LangGraph (via Deep Agents) for use with web-ba
    cd langgraph && langgraph dev
    ```
 
-This starts a LangGraph Platform API on port 2024. The agent loads the skill via progressive disclosure and connects to both MCP servers. If [LangSmith](https://smith.langchain.com) keys are provided, all traces are recorded for debugging.
+    This starts a LangGraph Platform API on port 2024. The agent loads the skill via progressive disclosure and connects to both MCP servers. If [LangSmith](https://smith.langchain.com) keys are provided, all traces are recorded for debugging.
 
 4. Open [Agent Chat](https://agentchat.vercel.app) in your browser and configure the connection:
 
