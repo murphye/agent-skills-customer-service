@@ -194,6 +194,8 @@ The skill can also be served via LangGraph (via Deep Agents) for use with web-ba
    LANGSMITH_PROJECT=customer-service  # optional
    ```
 
+   > **Note:** You will need to to create an `ANTHROPIC_API_KEY` key at [platform.claude.com](https://platform.claude.com/), if you don't already have one.
+
 3. Start the server:
 
    ```bash
