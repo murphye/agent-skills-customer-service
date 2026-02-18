@@ -8,10 +8,14 @@ Skill Test Harness — run multi-turn agent tests via the `claude` CLI.
 
 Usage:
     # Run all scenarios in a directory
-    uv run tests/run_test.py tests/scenarios/ --skill-dir .claude/skills/customer-service --verbose
+    uv run .claude/skills/customer-service/tests/run_test.py \
+    .claude/skills/customer-service/tests/scenarios/ \
+    -d .claude/skills/customer-service
 
     # Run a single scenario
-    uv run tests/run_test.py tests/scenarios/refund_auto_approve.yaml --skill-dir .claude/skills/customer-service
+    uv run .claude/skills/customer-service/tests/run_test.py \
+    .claude/skills/customer-service/tests/scenarios/order_status_happy.yaml \
+    -d .claude/skills/customer-service
 """
 
 import argparse
@@ -96,6 +100,7 @@ def call_claude(
     extra_flags: Optional[list[str]] = None,
     verbose: bool = False,
     env_override: Optional[dict] = None,
+    model: Optional[str] = None,
 ) -> tuple[str, list[dict]]:
     """
     Send a prompt to `claude` in print mode with stream-json output.
@@ -103,6 +108,9 @@ def call_claude(
     Returns (session_id, list_of_json_messages).
     """
     cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose"]
+
+    if model:
+        cmd += ["--model", model]
 
     # Resume existing session for multi-turn
     if session_id:
@@ -458,7 +466,7 @@ def run_quality_checks(
 
 # ── Main test executor ──────────────────────────────────────────────────────
 
-def _reset_mcp_state(skill_dir: Optional[str] = None, verbose: bool = False) -> None:
+def _reset_mcp_state(skill_dir: Optional[str] = None, verbose: bool = False, model: Optional[str] = None) -> None:
     """Reset both MCP servers to default state for test isolation.
 
     Sends a one-shot claude call to invoke the reset_state tools on both
@@ -476,6 +484,8 @@ def _reset_mcp_state(skill_dir: Optional[str] = None, verbose: bool = False) -> 
         "--dangerously-skip-permissions",
         "--max-turns", "2",
     ]
+    if model:
+        cmd += ["--model", model]
     if skill_dir:
         cmd += ["--add-dir", skill_dir]
 
@@ -494,7 +504,8 @@ def _reset_mcp_state(skill_dir: Optional[str] = None, verbose: bool = False) -> 
 
 
 def run_test_plan(plan_path: str, skill_dir: Optional[str] = None,
-                  verbose: bool = False, extra_flags: Optional[list] = None) -> TestResult:
+                  verbose: bool = False, extra_flags: Optional[list] = None,
+                  model: Optional[str] = None) -> TestResult:
     """Execute a single YAML test plan and return results."""
     with open(plan_path) as f:
         plan = yaml.safe_load(f)
@@ -504,7 +515,7 @@ def run_test_plan(plan_path: str, skill_dir: Optional[str] = None,
     start = time.time()
 
     # Reset MCP server state so each test starts clean
-    _reset_mcp_state(skill_dir=skill_dir, verbose=verbose)
+    _reset_mcp_state(skill_dir=skill_dir, verbose=verbose, model=model)
 
     print(f"\n{'━' * 60}")
     print(f"  TEST: {test_name}")
@@ -536,6 +547,7 @@ def run_test_plan(plan_path: str, skill_dir: Optional[str] = None,
                 skill_dir=skill_dir,
                 extra_flags=extra_flags,
                 verbose=verbose,
+                model=model,
             )
             turn_elapsed = time.time() - turn_start
             if sid:
@@ -648,6 +660,11 @@ def main():
         help="Additional flags to pass to claude CLI",
     )
     parser.add_argument(
+        "--model", "-m",
+        default="sonnet",
+        help="Claude model to use (default: sonnet). E.g., sonnet, haiku, opus, claude-sonnet-4-6",
+    )
+    parser.add_argument(
         "--json-report", "-j",
         help="Write a JSON report to this path",
     )
@@ -679,6 +696,7 @@ def main():
                 skill_dir=args.skill_dir,
                 verbose=args.verbose,
                 extra_flags=args.extra_flags or None,
+                model=args.model,
             )
             results.append(r)
         except Exception as e:
