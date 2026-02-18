@@ -93,11 +93,7 @@ Two lightweight [FastMCP](https://github.com/jlowin/fastmcp) servers provide the
 | **orders** | `lookup_customer`, `get_order`, `order_history`, `refund`, `reset_state` | Customer & order management |
 | **tickets** | `create_ticket`, `get_ticket`, `update_ticket`, `escalate_ticket`, `list_tickets`, `resolve_ticket`, `reset_state` | Support ticket lifecycle |
 
-Both servers use mock data (3 customers, 4 orders). When run via LangGraph, state is persisted to temp files so it survives across tool calls. To reset the mock data back to defaults:
-
-```bash
-rm -f /tmp/mcp_tickets_state.json /tmp/mcp_orders_state.json
-```
+Both servers use mock data (3 customers, 4 orders). 
 
 When run via Claude Code (stdio), each session starts fresh automatically.
 
@@ -227,7 +223,8 @@ The skill can also be served via LangGraph (via Deep Agents) for use with web-ba
 3. Start the server:
 
    ```bash
-   cd langgraph && langgraph dev
+   cd langgraph
+   langgraph dev --no-reload
    ```
 
     This starts a LangGraph Platform API on port 2024. The agent loads the skill via progressive disclosure and connects to both MCP servers. If [LangSmith](https://smith.langchain.com) keys are provided, all traces are recorded for debugging.
@@ -239,6 +236,12 @@ The skill can also be served via LangGraph (via Deep Agents) for use with web-ba
    - **LangSmith API Key**: leave blank (not needed for local dev)
 
    You can now chat with the customer-service agent through the web UI. Try the same sample prompts listed below.
+
+5. When run via LangGraph, state is persisted to temp files so it survives across tool calls. When finished running LangGraph, reset the mock data back to defaults:
+
+```bash
+rm -f /tmp/mcp_tickets_state.json /tmp/mcp_orders_state.json
+```
 
 
 ### Sample Prompts
