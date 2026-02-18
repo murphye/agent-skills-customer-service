@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "order-mcp": {
+      "command": "uv",
+      "args": ["run", ".claude/skills/customer-service/mcp/order_mcp.py"]
+    },
+    "ticket-mcp": {
+      "command": "uv",
+      "args": ["run", ".claude/skills/customer-service/mcp/ticket_mcp.py"]
+    }
+  }
+}
