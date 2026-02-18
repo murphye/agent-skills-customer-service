@@ -1,6 +1,6 @@
 # Agent Skills Demo: Customer Service Agent
 
-A non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local [MCP](https://modelcontextprotocol.io/) servers. It demonstrates that Agent Skills' Markdown specification can successfully define complex, multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests. In other words, this is a robust low-code agent solution.
+This demo is a non-trivial customer service agent implemented with [Agent Skills](https://agentskills.io), powered by two local [MCP](https://modelcontextprotocol.io/) servers. It demonstrates that Agent Skills' Markdown specification can successfully define complex multi-step agentic workflows with real business logic, and that those workflows can be tested with automated, multi-turn conversation tests. In other words, **this is a full-featured, well-tested, low-code agent solution**.
 
 The `customer-service` skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
 
@@ -22,9 +22,9 @@ After the MCP clients are enabled, type:
 /customer-service I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
 ```
 
-This will kick off a rudimentary customer service chat session using `claude`. This is a technology demonstration for how to use Agent Skills and MCP with Claude Code for the `customer-service` skill.
+This will kick off a customer service chat session using `claude` as a basic technology demonstration for how to use Agent Skills and MCP with Claude Code for the `customer-service` skill.
 
-For a better chat experience, see below for running a LangGraph server and a web-based chat interface. This is closer to how a real customer service chatbot would operate.
+For a more realistic chatbot experience, see the documentation below for easily running a LangGraph server and a web-based chat interface.
 
 ## What This Demo Shows
 
