@@ -44,7 +44,7 @@ On top of that, the included test harness lets you run a battery of multi-turn c
 │           ├── refund_escalate_high_value.yaml
 │           ├── escalate_max_retries.yaml
 │           └── new_issue_mid_conversation.yaml
-├── .claude/skills/customer-service -> ../../skills/customer-service  # Symlink
+├── .claude/skills -> ../skills                    # Symlink for Claude Code
 └── langgraph/                                  # LangGraph Server integration
     ├── graph.py                                # LangGraph entrypoint
     └── langgraph.json                          # LangGraph dev config
@@ -152,7 +152,7 @@ Claude Code discovers skills under `.claude/skills/`. This project stores the sk
 The symlink is already included in the repo. If you need to recreate it:
 
 ```bash
-ln -s skills/customer-service .claude/skills/customer-service
+mkdir -p .claude && ln -s ../skills .claude/skills
 ```
 
 ### LangGraph
