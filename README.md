@@ -17,12 +17,17 @@ orders ✔
 tickets ✔
 ```
 
-After the MCP clients are enabled, type:
+After the MCP clients are enabled, type in the `claude`, `codex`, or `gemini` prompt:
 ```
 I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
 ```
 
-This will kick off a customer service chat session using the `customer-service` skill.
+This will kick off a customer service chat session using the `customer-service` skill. The agent will:
+
+1. Identify the customer and their order
+2. Determine the refund eligibility
+3. Process the refund
+4. Provide the customer with the refund details
 
 For a more realistic chatbot experience, see the documentation below for easily running a LangGraph server and a web-based chat interface.
 
