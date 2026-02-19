@@ -8,7 +8,7 @@ The `customer-service` skill is platform-agnostic — it lives in `skills/` and 
 
 ```bash
 git clone https://github.com/murphye/agent-skills-customer-service && cd agent-skills-customer-service
-claude
+claude | codex | gemini
 ```
 In `claude`, enable the MCP clients, as they require approval.
 
