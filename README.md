@@ -171,35 +171,7 @@ The agent enforces policies defined in [`references/policies.md`](skills/custome
 - **Escalation triggers**: customer requests human, high-value refund, billing dispute, gold-tier dissatisfaction, 3 failed retries
 - **Priority assignment**: gold-tier and high-value orders get `high`; defective/safety issues get `urgent`
 
-## Run the Agent
-
-### Claude Code CLI
-
-Claude Code discovers skills under `.claude/skills/`. This project stores the skill in `skills/` (platform-agnostic) and uses a symlink so Claude Code finds it automatically.
-
-The symlink is already included in the repo. If you need to recreate it:
-
-```bash
-mkdir -p .claude && ln -s ../skills .claude/skills
-```
-
-#### Run Claude Code with the `customer-service` skill
-
-1. Open a terminal in this project directory and start the `claude` CLI:
-
-   ```bash
-   claude
-   ```
-
-2. Run the `/mcp` command to verify both MCP servers (`orders` and `tickets`) are connected. If either shows as disconnected, select it to reconnect.
-
-3. Invoke the skill with `/customer-service` or just describe a customer support scenario. On the first run, Claude Code will prompt you to approve calls to the MCP server tools — you can approve them individually or select "Always allow" to skip the prompts for the rest of the session.
-
-   ```
-   /customer-service I'm Bob Martinez (bob.m@example.com). Where is my monitor?
-   ```
-
-### LangGraph Server
+## Run the Agent (LangGraph Server)
 
 The skill can also be served via LangGraph (via Deep Agents) for use with web-based chat UIs (e.g., [Agent Chat](https://agentchat.vercel.app)).
 
@@ -242,7 +214,6 @@ The skill can also be served via LangGraph (via Deep Agents) for use with web-ba
 ```bash
 rm -f /tmp/mcp_tickets_state.json /tmp/mcp_orders_state.json
 ```
-
 
 ### Sample Prompts
 
