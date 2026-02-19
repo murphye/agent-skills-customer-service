@@ -4,7 +4,7 @@ This demo is a non-trivial customer service agent implemented with [Agent Skills
 
 The `customer-service` skill is platform-agnostic — it lives in `skills/` and can be consumed by the Claude Code CLI, LangGraph (with Deep Agents), or any agent tool or framework that reads markdown skill definitions and can connect to MCP servers.
 
-## Quick Start (`claude`)
+## Quick Start (`claude`, `codex`, or `gemini`)
 
 ```bash
 git clone https://github.com/murphye/agent-skills-customer-service && cd agent-skills-customer-service
@@ -19,10 +19,10 @@ tickets ✔
 
 After the MCP clients are enabled, type:
 ```
-/customer-service I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
+I'm Alice (alice@example.com). My wireless headphones are defective, I want a refund.
 ```
 
-This will kick off a customer service chat session using `claude` as a basic technology demonstration for how to use Agent Skills and MCP with Claude Code for the `customer-service` skill.
+This will kick off a customer service chat session using the `customer-service` skill.
 
 For a more realistic chatbot experience, see the documentation below for easily running a LangGraph server and a web-based chat interface.
 
