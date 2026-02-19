@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "orders": {
+      "command": "uv",
+      "args": ["run", "mcp/orders.py"]
+    },
+    "tickets": {
+      "command": "uv",
+      "args": ["run", "mcp/tickets.py"]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+[mcp_servers.orders]
+command = "uv"
+args = ["run", "mcp/orders.py"]
+
+[mcp_servers.tickets]
+command = "uv"
+args = ["run", "mcp/tickets.py"]
