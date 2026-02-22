@@ -38,7 +38,7 @@ client = MultiServerMCPClient(
 mcp_tools = asyncio.new_event_loop().run_until_complete(client.get_tools())
 
 agent = create_deep_agent(
-    model="claude-sonnet-4-6",
+    model="claude-opus-4-6",
     tools=mcp_tools,
     skills=["skills/"],
     backend=FilesystemBackend(root_dir=".."),
