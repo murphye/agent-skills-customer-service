@@ -9,6 +9,19 @@ metadata:
   category: demo
   loop-type: agentic-tasks
 allowed-tools: mcp__orders__* mcp__tickets__* Read TaskCreate TaskList TaskGet TaskUpdate
+hooks:
+  PreToolUse:
+    - matcher: "TaskCreate"
+      hooks:
+        - type: "command"
+          command: "bash $CLAUDE_PROJECT_DIR/.claude/skills/customer-service/hooks/on-task-create.sh"
+          timeout: 5
+  PostToolUse:
+    - matcher: "*" # mcp__orders__.*|mcp__tickets__.*
+      hooks:
+        - type: "command"
+          command: "touch /tmp/cs_1.txt" // bash $CLAUDE_PROJECT_DIR/.claude/skills/customer-service/hooks/require-tasks.sh
+          timeout: 5
 ---
 
 # Customer Service Agent — Tasks-Driven Workflow
