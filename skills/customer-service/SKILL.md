@@ -13,15 +13,15 @@ hooks:
   PreToolUse:
     - matcher: "TaskCreate"
       hooks:
-        - type: "command"
-          command: "bash $CLAUDE_PROJECT_DIR/.claude/skills/customer-service/hooks/on-task-create.sh"
-          timeout: 5
+        - type: command
+          command: "bash skills/customer-service/hooks/on-task-create.sh"
+          timeout: 1
   PostToolUse:
-    - matcher: "*" # mcp__orders__.*|mcp__tickets__.*
+    - matcher: "mcp__orders__.*|mcp__tickets__.*"
       hooks:
-        - type: "command"
-          command: "touch /tmp/cs_1.txt" // bash $CLAUDE_PROJECT_DIR/.claude/skills/customer-service/hooks/require-tasks.sh
-          timeout: 5
+        - type: command
+          command: "bash skills/customer-service/hooks/require-tasks.sh"
+          timeout: 1
 ---
 
 # Customer Service Agent — Tasks-Driven Workflow
