@@ -62,8 +62,8 @@ the tasks needed for the actual workflow path are created.
 
 ```
 PHASE 1 — Always created at interaction start:
-  #1  STATE TRACKER         (no deps)      — holds all internal variables
-  #2  INTAKE                (blocked by #1) — identify customer
+  #1  STATE TRACKER         (no deps)      — holds all internal variables; never blocks STEP tasks
+  #2  INTAKE                (no deps)      — identify customer
   #3  CLASSIFY INTENT       (blocked by #2) — determine what they need
   #4  ATTEMPT RESOLUTION    (blocked by #3) — gather data + diagnose
   #5  CONFIDENCE CHECK      (blocked by #4) — route HIGH vs LOW
@@ -126,7 +126,7 @@ TaskCreate({
   subject: "STEP 1: Intake — identify customer",
   description: "Extract identifiers from customer message. Look up customer via lookup_customer or get_order. Store CUSTOMER record. Greet by first name."
 })
-TaskUpdate({ taskId: "2", addBlockedBy: ["1"] })
+TaskUpdate({ taskId: "2", status: "in_progress" })
 ```
 
 **Execution:**
