@@ -17,6 +17,8 @@ from deepagents import create_deep_agent
 from deepagents.backends import FilesystemBackend
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
+from task_middleware import TaskMiddleware
+
 # ── Build the agent with MCP tools ──────────────────────────
 
 client = MultiServerMCPClient(
@@ -41,4 +43,5 @@ agent = create_deep_agent(
     skills=["skills/"],
     backend=FilesystemBackend(root_dir=".."),
     system_prompt="You are a customer service agent. Always read and follow the customer-service skill before responding.",
+    middleware=[TaskMiddleware()],
 )
