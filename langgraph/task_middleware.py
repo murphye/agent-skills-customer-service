@@ -125,7 +125,7 @@ Mark the first task(s) you are about to start as in_progress immediately after c
 Args:
     subject:      Brief imperative title (e.g. 'Run tests', 'Fix auth bug').
     description:  Detailed requirements and acceptance criteria.
-    active_form:  Present-continuous label shown while in_progress (e.g. 'Running tests').
+    activeForm:   Present-continuous label shown while in_progress (e.g. 'Running tests').
     metadata:     Optional key-value pairs for extra context."""
 
 TASK_LIST_DESCRIPTION = """List all active tasks (excludes deleted tasks).
@@ -144,23 +144,24 @@ TASK_UPDATE_DESCRIPTION = """Update an existing task's status, details, or depen
 Only provide fields you want to change — omitted fields are left untouched.
 
 Common patterns:
-  Start task:       {"task_id": "1", "status": "in_progress"}
-  Finish task:      {"task_id": "1", "status": "completed"}
-  Add dependency:   {"task_id": "2", "add_blocked_by": ["1"]}
-  Delete task:      {"task_id": "3", "status": "deleted"}
-  Merge metadata:   {"task_id": "1", "metadata": {"key": "value"}}
-  Remove meta key:  {"task_id": "1", "metadata": {"key": null}}
+  Start task:       {"taskId": "1", "status": "in_progress"}
+  Finish task:      {"taskId": "1", "status": "completed"}
+  Add dependency:   {"taskId": "2", "addBlockedBy": ["1"]}
+  Delete task:      {"taskId": "3", "status": "deleted"}
+  Merge metadata:   {"taskId": "1", "metadata": {"key": "value"}}
+  Remove meta key:  {"taskId": "1", "metadata": {"key": null}}
 
 Args:
-    task_id:        ID of the task to update (required).
-    status:         New status: pending | in_progress | completed | deleted.
-    subject:        New brief title.
-    description:    New detailed description.
-    active_form:    New present-continuous label.
-    owner:          New owner name.
-    metadata:       Keys to merge in; set a key to null to delete it.
-    add_blocks:     Task IDs that this task should block (bidirectional).
-    add_blocked_by: Task IDs that must complete before this task (bidirectional)."""
+    taskId:        ID of the task to update (required).
+    status:        New status: pending | in_progress | completed | deleted.
+    subject:       New brief title.
+    description:   New detailed description.
+    activeForm:    New present-continuous label.
+    owner:         New owner name.
+    metadata:      Keys to merge in; set a key to null to delete it.
+    addBlocks:     Task IDs that this task should block (bidirectional).
+    addBlockedBy:  Task IDs that must complete before this task (bidirectional).
+    addNote:       Append a note line to the task description (e.g. to update state variables)."""
 
 
 # ── State reducer ─────────────────────────────────────────────────────────────
@@ -274,7 +275,7 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
             description: str,
             tasks: Annotated[list[Task] | None, InjectedState("tasks")],
             tool_call_id: Annotated[str, InjectedToolCallId],
-            active_form: str = "",
+            activeForm: str = "",  # noqa: N803
             metadata: dict[str, Any] | None = None,
         ) -> Command[Any]:
             """Create a new task."""
@@ -283,7 +284,7 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
                 "task_id": _next_id(current),
                 "subject": subject,
                 "description": description,
-                "active_form": active_form,
+                "active_form": activeForm,
                 "status": "pending",
                 "owner": "",
                 "metadata": metadata or {},
@@ -341,15 +342,15 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
 
         @tool(description=task_get_description)
         def TaskGet(  # noqa: N802
-            task_id: str,
+            taskId: str,  # noqa: N803
             tasks: Annotated[list[Task] | None, InjectedState("tasks")],
             tool_call_id: Annotated[str, InjectedToolCallId],
         ) -> Command[Any]:
             """Get full details for a task."""
             current: list[Task] = tasks or []
-            task = next((t for t in current if t["task_id"] == task_id), None)
+            task = next((t for t in current if t["task_id"] == taskId), None)
             content = (
-                json.dumps(task, indent=2) if task else f"Task '{task_id}' not found."
+                json.dumps(task, indent=2) if task else f"Task '{taskId}' not found."
             )
             return Command(
                 update={
@@ -361,29 +362,30 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
 
         @tool(description=task_update_description)
         def TaskUpdate(  # noqa: N802
-            task_id: str,
+            taskId: str,  # noqa: N803
             tasks: Annotated[list[Task] | None, InjectedState("tasks")],
             tool_call_id: Annotated[str, InjectedToolCallId],
             status: Literal["pending", "in_progress", "completed", "deleted"] | None = None,
             subject: str | None = None,
             description: str | None = None,
-            active_form: str | None = None,
+            activeForm: str | None = None,  # noqa: N803
             owner: str | None = None,
             metadata: dict[str, Any] | None = None,
-            add_blocks: list[str] | None = None,
-            add_blocked_by: list[str] | None = None,
+            addBlocks: list[str] | None = None,  # noqa: N803
+            addBlockedBy: list[str] | None = None,  # noqa: N803
+            addNote: str | None = None,  # noqa: N803
         ) -> Command[Any]:
             """Update an existing task."""
             # Work on a shallow copy of each task dict so we don't mutate caller state.
             current: list[dict[str, Any]] = [dict(t) for t in (tasks or [])]  # type: ignore[arg-type]
 
-            idx = next((i for i, t in enumerate(current) if t["task_id"] == task_id), None)
+            idx = next((i for i, t in enumerate(current) if t["task_id"] == taskId), None)
             if idx is None:
                 return Command(
                     update={
                         "messages": [
                             ToolMessage(
-                                f"Task '{task_id}' not found.",
+                                f"Task '{taskId}' not found.",
                                 tool_call_id=tool_call_id,
                                 status="error",
                             )
@@ -403,9 +405,9 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
             if description is not None:
                 task["description"] = description
                 changes.append("description updated")
-            if active_form is not None:
-                task["active_form"] = active_form
-                changes.append("active_form updated")
+            if activeForm is not None:
+                task["active_form"] = activeForm
+                changes.append("activeForm updated")
             if owner is not None:
                 task["owner"] = owner
                 changes.append(f"owner → {owner}")
@@ -418,12 +420,16 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
                         merged[k] = v
                 task["metadata"] = merged
                 changes.append("metadata updated")
+            if addNote is not None:
+                existing = task.get("description") or ""
+                task["description"] = f"{existing}\n{addNote}" if existing else addNote
+                changes.append("note added")
 
             # Bidirectional dependency wiring
             blocks: list[str] = list(task.get("blocks") or [])
             blocked_by: list[str] = list(task.get("blocked_by") or [])
 
-            for bid in add_blocks or []:
+            for bid in addBlocks or []:
                 if bid not in blocks:
                     blocks.append(bid)
                     changes.append(f"blocks → +{bid}")
@@ -432,11 +438,11 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
                 )
                 if other_idx is not None:
                     other_bb: list[str] = list(current[other_idx].get("blocked_by") or [])
-                    if task_id not in other_bb:
-                        other_bb.append(task_id)
+                    if taskId not in other_bb:
+                        other_bb.append(taskId)
                         current[other_idx]["blocked_by"] = other_bb
 
-            for bid in add_blocked_by or []:
+            for bid in addBlockedBy or []:
                 if bid not in blocked_by:
                     blocked_by.append(bid)
                     changes.append(f"blocked_by → +{bid}")
@@ -445,8 +451,8 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
                 )
                 if other_idx is not None:
                     other_bl: list[str] = list(current[other_idx].get("blocks") or [])
-                    if task_id not in other_bl:
-                        other_bl.append(task_id)
+                    if taskId not in other_bl:
+                        other_bl.append(taskId)
                         current[other_idx]["blocks"] = other_bl
 
             task["blocks"] = blocks
@@ -458,7 +464,7 @@ class TaskMiddleware(AgentMiddleware[TaskState[ResponseT], ContextT, ResponseT])
                     "messages": [
                         ToolMessage(
                             json.dumps(
-                                {"task_id": task_id, "changes": changes, "task": task}
+                                {"task_id": taskId, "changes": changes, "task": task}
                             ),
                             tool_call_id=tool_call_id,
                         )
